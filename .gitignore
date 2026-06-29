@@ -1,0 +1,13 @@
+# Internal notes — kept local, not published (contains personal references)
+docs/
+
+# Netlify upload artifacts
+*.zip
+.netlify/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/

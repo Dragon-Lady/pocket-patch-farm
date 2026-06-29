@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#5f8f4e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Pocket Patch">
+    <title>Pocket Patch Farm</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="assets/icon.svg">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell" id="app">
+      <header class="topbar">
+        <div>
+          <p class="kicker">Day <span id="day">1</span> · <span id="season">Sprout</span></p>
+          <h1>Pocket Patch Farm</h1>
+        </div>
+        <button class="icon-button" id="soundToggle" type="button" aria-label="Toggle sound effects">SFX</button>
+      </header>
+
+      <section class="status-strip" aria-label="Farm resources">
+        <div class="meter">
+          <span>Coins</span>
+          <strong id="coins">0</strong>
+        </div>
+        <div class="meter">
+          <span>Energy</span>
+          <strong id="energy">0</strong>
+        </div>
+        <div class="meter">
+          <span>Reputation</span>
+          <strong id="reputation">0</strong>
+        </div>
+        <div class="meter">
+          <span>Level</span>
+          <strong id="farmLevel">1</strong>
+        </div>
+        <div class="meter">
+          <span>Time</span>
+          <strong id="clock">7:00 AM</strong>
+        </div>
+        <div class="meter">
+          <span>Bin</span>
+          <strong id="binMeter">0/8</strong>
+        </div>
+      </section>
+
+      <section class="field-scene" aria-label="Farm field">
+        <div class="skyline">
+          <span class="sun" aria-hidden="true"></span>
+          <span class="cloud cloud-a" aria-hidden="true"></span>
+          <span class="cloud cloud-b" aria-hidden="true"></span>
+        </div>
+        <div class="farm-backdrop" aria-hidden="true">
+          <span class="barn-shape"></span>
+          <span class="silo-shape"></span>
+          <span class="fence-line"></span>
+        </div>
+        <div class="field-toolbar">
+          <button id="nextDayButton" class="primary-button" type="button">Sleep</button>
+          <button id="waterAllButton" class="ghost-button" type="button">Water all</button>
+        </div>
+        <div class="plot-grid" id="plotGrid" aria-label="Crop plots"></div>
+        <div class="vehicle-panel" aria-label="Vehicle controls">
+          <div class="vehicle-select" role="group" aria-label="Choose vehicle">
+            <button class="vehicle-tab active" type="button" data-vehicle="tractor">Tractor</button>
+            <button class="vehicle-tab" type="button" data-vehicle="harvester">Harvester</button>
+            <button class="vehicle-tab" type="button" data-vehicle="truck">Truck</button>
+          </div>
+          <div class="vehicle-status">
+            <span id="vehicleName">Tractor</span>
+            <strong id="vehicleHint">Plant or water the selected plot.</strong>
+          </div>
+          <div class="auto-status" id="autoStatus">Auto crew idle</div>
+          <button class="wide-button" id="selectedDeployButton" type="button">Deploy selected</button>
+          <div class="vehicle-seeds" id="vehicleSeeds" aria-label="Tractor seed choices"></div>
+          <div class="drive-controls">
+            <button class="drive-button spacer" type="button" aria-hidden="true" tabindex="-1"></button>
+            <button class="drive-button" type="button" data-drive="up" aria-label="Drive up">↑</button>
+            <button class="drive-button spacer" type="button" aria-hidden="true" tabindex="-1"></button>
+            <button class="drive-button" type="button" data-drive="left" aria-label="Drive left">←</button>
+            <button class="drive-action" id="vehicleActionButton" type="button">Use</button>
+            <button class="drive-button" type="button" data-drive="right" aria-label="Drive right">→</button>
+            <button class="drive-button spacer" type="button" aria-hidden="true" tabindex="-1"></button>
+            <button class="drive-button" type="button" data-drive="down" aria-label="Drive down">↓</button>
+            <button class="drive-button spacer" type="button" aria-hidden="true" tabindex="-1"></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="homestead-section" id="homestead" aria-label="Farmstead and vendors">
+        <div class="farmhouse level-1" id="farmhouseVisual">
+          <span class="house-roof"></span>
+          <span class="house-door"></span>
+          <span class="house-window left"></span>
+          <span class="house-window right"></span>
+          <strong id="houseLevelLabel">Farmhouse Lv. 1</strong>
+        </div>
+        <div class="farmyard" aria-hidden="true">
+          <span class="farmhand hand-a"></span>
+          <span class="farmhand hand-b"></span>
+          <span class="vendor-shop produce-stand"><span>Mina's Produce</span></span>
+          <span class="vendor-shop feed-store"><span>River Feed</span></span>
+          <span class="delivery-runner" id="deliveryTruck"></span>
+        </div>
+      </section>
+
+      <section class="tabs" aria-label="Farm panels">
+        <button class="tab active" type="button" data-panel="orders">Orders</button>
+        <button class="tab" type="button" data-panel="goals">Goals</button>
+        <button class="tab" type="button" data-panel="shop">Shop</button>
+        <button class="tab" type="button" data-panel="barn">Barn</button>
+        <button class="tab" type="button" data-panel="garage">Garage</button>
+      </section>
+
+      <section class="panel active" id="ordersPanel" aria-label="Order board">
+        <div class="section-title">
+          <h2>Order Board</h2>
+          <span id="weatherBadge">Clear</span>
+        </div>
+        <div id="orders" class="stack"></div>
+      </section>
+
+      <section class="panel" id="goalsPanel" aria-label="Daily goals">
+        <div class="section-title">
+          <h2>Daily Goals</h2>
+          <span>Claim rewards</span>
+        </div>
+        <div id="dailyGoals" class="stack"></div>
+      </section>
+
+      <section class="panel" id="shopPanel" aria-label="Seed shop">
+        <div class="section-title">
+          <h2>Seed Shop</h2>
+          <span>Tap to buy</span>
+        </div>
+        <div id="shop" class="shop-grid"></div>
+        <div class="upgrade-row">
+          <button id="expandButton" class="wide-button" type="button">Buy plot · 75 coins</button>
+          <button id="scarecrowButton" class="wide-button" type="button">Scarecrow · 120 coins</button>
+          <button id="binButton" class="wide-button" type="button">Bigger bin · 90 coins</button>
+        </div>
+        <div class="quest-card">
+          <h3>Homestead</h3>
+          <div id="homeShop" class="stack"></div>
+        </div>
+      </section>
+
+      <section class="panel" id="barnPanel" aria-label="Barn inventory">
+        <div class="section-title">
+          <h2>Barn</h2>
+          <span id="saveStatus">Saved</span>
+        </div>
+        <div class="sell-mode">
+          <button class="wide-button" id="barnSellButton" type="button">Sell bin at market</button>
+          <button class="wide-button" id="barnBinButton" type="button">Bigger bin</button>
+        </div>
+        <div id="barn" class="barn-grid"></div>
+        <div class="quest-card">
+          <h3 id="questTitle">First Harvest</h3>
+          <p id="questText">Harvest 3 crops to earn a bonus.</p>
+          <div class="progress-track">
+            <span id="questProgress"></span>
+          </div>
+        </div>
+        <button id="resetButton" class="danger-button" type="button">Reset farm</button>
+      </section>
+
+      <section class="panel" id="garagePanel" aria-label="Vehicle garage">
+        <div class="section-title">
+          <h2>Garage</h2>
+          <span id="garageStatus">Upgrade vehicles</span>
+        </div>
+        <div class="sell-mode">
+          <button class="wide-button active" id="orderModeButton" type="button">Truck: Orders</button>
+          <button class="wide-button" id="marketModeButton" type="button">Truck: Market</button>
+        </div>
+        <div id="garage" class="stack"></div>
+      </section>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      <div class="modal" id="plotModal" aria-hidden="true">
+        <div class="modal-card">
+          <div class="modal-head">
+            <h2 id="modalTitle">Plot</h2>
+            <button class="icon-button" id="closeModal" type="button" aria-label="Close">×</button>
+          </div>
+          <p id="modalText"></p>
+          <div id="modalActions" class="action-grid"></div>
+        </div>
+      </div>
+    </main>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>

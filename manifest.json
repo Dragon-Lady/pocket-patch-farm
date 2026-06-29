@@ -1,0 +1,18 @@
+{
+  "name": "Pocket Patch Farm",
+  "short_name": "Pocket Patch",
+  "description": "A small cozy farming sim built for iPhone playtesting.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#a8d7ee",
+  "theme_color": "#5f8f4e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
