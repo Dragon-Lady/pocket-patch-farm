@@ -229,7 +229,7 @@ function renderVehicle() {
   const names = { tractor: "Tractor", harvester: "Harvester", truck: "Grain Truck" };
   const hints = {
     tractor: `Plant ${crops[state.vehicle.seed].name} on empty plots, or water growing crops.`,
-    harvester: "Drive onto a ready crop and harvest it into the barn.",
+    harvester: "Drive onto a ready crop and harvest it into the barn. If the bin is full, crops wait in the field trailer.",
     truck: state.sellMode === "orders"
       ? "Deliver the first order your barn can fill."
       : "Sell stored crops at the market to clear bin space.",
@@ -363,13 +363,13 @@ function renderBinButtons() {
   const cost = binUpgradeCost();
   const upgradeText = `Bigger bin · ${cost} coins (${state.storageLimit} slots)`;
   const canUpgrade = state.coins >= cost;
-  const canSell = storageUsed() > 0 || fieldLoadUsed() > 0;
+  const canSell = storageUsed() > 0;
   $("binButton").disabled = !canUpgrade;
   $("binButton").textContent = upgradeText;
   $("barnBinButton").disabled = !canUpgrade;
   $("barnBinButton").textContent = upgradeText;
   $("barnSellButton").disabled = !canSell;
-  $("barnSellButton").textContent = canSell ? "Sell bin at market" : "Bin empty";
+  $("barnSellButton").textContent = canSell ? "Sell bin at market" : fieldLoadUsed() ? "Bin empty - haul trailer first" : "Bin empty";
 }
 
 function renderOrders() {
@@ -500,7 +500,7 @@ function openPlot(id) {
     ? "Ready to harvest."
     : `${formatGrowTime(daysLeft(plot))} left. Watering speeds crops up.`;
   addModalButton("Water", "Use a little energy", () => waterPlot(id), plot.watered || state.energy < tractorEnergyCost());
-  addModalButton("Harvest", `Load ${crop.name}`, () => harvestPlot(id), !plot.ready || state.energy < workEnergyCost || fieldLoadUsed() >= fieldLoadLimit());
+  addModalButton("Harvest", `Harvest ${crop.name}`, () => harvestPlot(id), !plot.ready || state.energy < workEnergyCost || !hasHarvestSpace());
 }
 
 function addModalButton(label, detail, action, disabled) {
@@ -562,15 +562,20 @@ function harvestPlot(id, options = {}) {
     if (!silent) toast("Too tired. Sleep to refill energy.");
     return false;
   }
-  if (fieldLoadUsed() >= fieldLoadLimit()) {
-    if (!silent) toast("The field trailer is full. Use the grain truck to haul it.");
+  if (!hasHarvestSpace()) {
+    if (!silent) toast("Barn and field trailer are full. Deliver orders or sell bin crops first.");
     return false;
   }
   if (isTooLate()) return false;
   spendEnergy(workEnergyCost);
   const cropKey = plot.crop;
   const crop = crops[cropKey];
-  state.fieldLoad[cropKey] += 1;
+  const wentToBin = storageUsed() < state.storageLimit;
+  if (wentToBin) {
+    state.inventory[cropKey] += 1;
+  } else {
+    state.fieldLoad[cropKey] += 1;
+  }
   state.stats.harvest += 1;
   state.dailyStats.harvest += 1;
   state.stats[cropKey] += 1;
@@ -579,7 +584,11 @@ function harvestPlot(id, options = {}) {
   checkQuest();
   popPlot(id);
   closePlot();
-  if (!silent) toast(`${crop.name} loaded. Send grain truck to bin or market. +1 XP.`);
+  if (!silent) {
+    toast(wentToBin
+      ? `${crop.name} stored in the barn. +1 XP.`
+      : `Barn full. ${crop.name} loaded in the field trailer. Sell or deliver bin crops, then haul it. +1 XP.`);
+  }
   if (renderAfter) render();
   return true;
 }
@@ -812,23 +821,21 @@ function binUpgradeCost() {
 }
 
 function sellAllMarketStock() {
-  if (!storageUsed() && !fieldLoadUsed()) {
-    toast("No stored crops to sell.");
+  if (!storageUsed()) {
+    toast(fieldLoadUsed() ? "Bin is empty. Use the grain truck after making bin space." : "No bin crops to sell.");
     return;
   }
   let sold = 0;
   let total = 0;
-  [state.fieldLoad, state.inventory].forEach((source) => {
-    Object.entries(source).forEach(([cropKey, qty]) => {
-      if (!qty) return;
-      sold += qty;
-      total += Math.round(crops[cropKey].sell * qty * 0.5);
-      source[cropKey] = 0;
-    });
+  Object.entries(state.inventory).forEach(([cropKey, qty]) => {
+    if (!qty) return;
+    sold += qty;
+    total += Math.round(crops[cropKey].sell * qty * 0.5);
+    state.inventory[cropKey] = 0;
   });
   addCoins(total);
   gainXp(Math.max(1, Math.floor(sold / 2)));
-  toast(`Sold ${sold} stored crops at market. +${total} coins.`);
+  toast(`Sold ${sold} bin crop${sold === 1 ? "" : "s"} at market. +${total} coins.`);
   animateDelivery("market");
   render();
 }
@@ -908,6 +915,10 @@ function fieldLoadUsed() {
 
 function fieldLoadLimit() {
   return state.plotCount + state.upgrades.truck * 2;
+}
+
+function hasHarvestSpace() {
+  return storageUsed() < state.storageLimit || fieldLoadUsed() < fieldLoadLimit();
 }
 
 function fieldColumns() {
@@ -1060,8 +1071,8 @@ function automationStatusText() {
     return `Manual ${selected} selected. Deploy to auto-run.`;
   }
 
-  if (state.automation.harvester && fieldLoadUsed() >= fieldLoadLimit()) {
-    return "Auto crew: Harvester waiting. Field trailer is full.";
+  if (state.automation.harvester && !hasHarvestSpace()) {
+    return "Auto crew: Harvester waiting. Barn and field trailer are full.";
   }
   if (state.automation.harvester && !hasReadyCrop()) {
     return "Auto crew: Harvester waiting for ready crops.";
@@ -1120,7 +1131,7 @@ function autoHarvest() {
     updatePlotReadiness(plot);
     return plot.id < state.plotCount && plot.crop && plot.ready;
   });
-  if (!ready || state.energy < workEnergyCost || fieldLoadUsed() >= fieldLoadLimit()) return false;
+  if (!ready || state.energy < workEnergyCost || !hasHarvestSpace()) return false;
   state.vehicle.type = "harvester";
   state.vehicle.position = ready.id;
   return harvestPlot(ready.id, { silent: true, renderAfter: false });

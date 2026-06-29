@@ -7,7 +7,7 @@ A small iPhone-friendly farming sim prototype for mobile playtesting.
 - Plant seeds in empty plots.
 - Water crops to speed them through the night.
 - Sleep to advance the day.
-- Harvest crops into the barn.
+- Harvest crops into the barn until the grain bin is full.
 - Complete orders for coins and reputation.
 - Unlock crops, buy plots, and add a scarecrow.
 - Drive the tractor, harvester, and grain truck with on-screen controls.
@@ -17,8 +17,8 @@ A small iPhone-friendly farming sim prototype for mobile playtesting.
   controls in one tap.
 - Choose visible tractor seed buttons for carrots, berries, and later unlocks.
 - Watch the clock move from morning to night as work gets done.
-- Harvested crops use grain-bin space until orders are delivered or the bin is
-  upgraded.
+- Harvested crops use grain-bin space until orders are delivered, crops are
+  sold from the bin, or the bin is upgraded.
 - Harvesting also pays coins immediately, while orders provide extra delivery
   rewards from stored crops.
 - Early pacing is intentionally quick for testing: carrots, berries, and corn
@@ -33,14 +33,14 @@ A small iPhone-friendly farming sim prototype for mobile playtesting.
   open, use the selected tractor seed, and stop at night.
 - Truck mode can be set to order delivery or market selling from the Garage;
   the mode affects both manual truck use and deployed auto-trucks.
-- Barn includes direct bin recovery controls: sell stored crops at market or
-  buy a bigger bin. If the bin is full, the bin upgrade cost drops to prevent
-  a stuck state.
-- Harvester now loads crops into a field trailer first. The grain truck is
-  responsible for hauling trailer crops into the grain bin or selling them at
-  market, so it has a distinct job from harvesting.
-- Grain truck always hauls field-trailer crops to the barn/bin first; vendor
-  selling only happens from grain-bin inventory.
+- Barn includes direct bin recovery controls: sell bin crops at market or buy a
+  bigger bin. If the bin is full, the bin upgrade cost drops to prevent a stuck
+  state.
+- Harvesting stores crops in the grain bin first. When the bin is full,
+  harvested crops wait in the field trailer until the grain truck can haul them
+  after the player sells or delivers bin crops.
+- Grain truck always hauls field-trailer crops to the barn/bin first when
+  space is available; vendor selling only happens from grain-bin inventory.
 - Deployed grain truck no longer auto-delivers order-board requests. It hauls
   field-trailer crops to the barn/bin, then waits for manual order dispatch.
 - Deployed harvester now sweeps all ready plots it can fit in the field trailer.
