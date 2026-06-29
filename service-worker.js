@@ -1,4 +1,4 @@
-const cacheName = "pocket-patch-farm-v26";
+const cacheName = "pocket-patch-farm-v28";
 const assets = [
   "./",
   "./index.html",

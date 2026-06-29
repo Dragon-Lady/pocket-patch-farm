@@ -24,6 +24,8 @@ const maxEnergy = 20;
 const workEnergyCost = 0.5;
 const maxVehicleLevel = 3;
 const maxPlots = 24;
+const saveKey = "pocket-patch-farm-public-test-1";
+const oldSaveKeys = ["pocket-patch-farm"];
 
 const garageUpgrades = {
   tractor: { name: "Tractor", perk: "Lower planting and watering energy cost" },
@@ -91,7 +93,7 @@ const modalText = $("modalText");
 const modalActions = $("modalActions");
 
 function loadState() {
-  const saved = localStorage.getItem("pocket-patch-farm");
+  const saved = localStorage.getItem(saveKey);
   if (!saved) {
     const fresh = structuredClone(defaultState);
     fresh.orders = makeOrders(fresh);
@@ -134,7 +136,7 @@ function loadState() {
 }
 
 function saveState() {
-  localStorage.setItem("pocket-patch-farm", JSON.stringify(state));
+  localStorage.setItem(saveKey, JSON.stringify(state));
   $("saveStatus").textContent = "Saved";
 }
 
@@ -1340,7 +1342,7 @@ function popPlot(id) {
 
 function resetFarm() {
   if (!confirm("Reset Pocket Patch Farm?")) return;
-  localStorage.removeItem("pocket-patch-farm");
+  [saveKey, ...oldSaveKeys].forEach((key) => localStorage.removeItem(key));
   state = loadState();
   toast("Farm reset.");
   render();

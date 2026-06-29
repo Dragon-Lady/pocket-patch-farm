@@ -1,6 +1,6 @@
 # Pocket Patch Farm
 
-A small iPhone-friendly farming sim prototype for family playtesting.
+A small iPhone-friendly farming sim prototype for mobile playtesting.
 
 ## Play Loop
 
